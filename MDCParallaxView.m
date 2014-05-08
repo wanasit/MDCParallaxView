@@ -226,12 +226,10 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
     CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
     CGFloat threshold = CGRectGetHeight(self.backgroundView.frame) - self.backgroundHeight;
 
-    if (offsetY > -threshold && offsetY < 0.0f) {
-        self.backgroundScrollView.contentOffset = CGPointMake(0.0f, floorf(offsetY/2));
-    } else if (offsetY < 0.0f) {
+    if (offsetY < -threshold && offsetY < 0.0f) {
         self.backgroundScrollView.contentOffset = CGPointMake(0.0f, offsetY + floorf(threshold/2));
     } else {
-        self.backgroundScrollView.contentOffset = CGPointMake(0.0f, offsetY);
+        self.backgroundScrollView.contentOffset = CGPointMake(0.0f, floorf(offsetY/2));
     }
 }
 
