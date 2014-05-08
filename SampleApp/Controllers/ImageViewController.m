@@ -41,7 +41,7 @@
     [super viewDidLoad];
 
     UIImage *backgroundImage = [UIImage imageNamed:@"background.png"];
-    CGRect backgroundRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), backgroundImage.size.height);
+    CGRect backgroundRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), backgroundImage.size.height+50);
     UIImageView *backgroundImageView = [[UIImageView alloc] initWithFrame:backgroundRect];
     backgroundImageView.image = backgroundImage;
     backgroundImageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -72,6 +72,9 @@
     parallaxView.frame = self.view.bounds;
     parallaxView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     parallaxView.backgroundHeight = 250.0f;
+    parallaxView.backgroundExpandedHeight = 450;
+    parallaxView.expandThreshold = 50;
+    
     parallaxView.scrollView.scrollsToTop = YES;
     parallaxView.backgroundInteractionEnabled = YES;
     parallaxView.scrollViewDelegate = self;

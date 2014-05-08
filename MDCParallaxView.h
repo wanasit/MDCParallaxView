@@ -34,6 +34,11 @@
 @property (nonatomic, weak) id<UIScrollViewDelegate> scrollViewDelegate;
 /// The height of the background view when at rest.
 @property (nonatomic, assign) CGFloat backgroundHeight;
+
+@property (nonatomic, assign) CGFloat backgroundExpandedHeight;
+@property (nonatomic, assign) CGFloat expandThreshold;
+@property (nonatomic, getter = isBackgroundExpaneded) BOOL backgroundExpaneded;
+
 /// YES if the backgroundView should handle touch input. 
 @property (nonatomic, getter = isBackgroundInteractionEnabled) BOOL backgroundInteractionEnabled;
 
