@@ -28,14 +28,14 @@
 
 static void * kMDCForegroundViewObservationContext = &kMDCForegroundViewObservationContext;
 static void * kMDCBackgroundViewObservationContext = &kMDCBackgroundViewObservationContext;
-static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
+static CGFloat const kMDCParallaxViewDefaultBackgroundHeight = 150.0f;
+static CGFloat const kMDCParallaxViewDefaultBackgroundExpanedHeight = 400;
+static CGFloat const kMDCParallaxViewDefaultBackgroundExpandThreshold = 60;
+static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 30;
 
 @interface MDCParallaxView () <UIScrollViewDelegate>
-@property (nonatomic, strong) UIView *backgroundView;
-@property (nonatomic, strong) UIView *foregroundView;
 @property (nonatomic, strong) UIScrollView *backgroundScrollView;
 @property (nonatomic, strong) UIScrollView *foregroundScrollView;
-
 @property (nonatomic, assign) CGFloat currentBackgroundHeight;
 @end
 
@@ -45,36 +45,81 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
 
 #pragma mark - Object Lifecycle
 
+- (id)init{
+    
+    if (self = [super init]) {
+        _currentBackgroundHeight = kMDCParallaxViewDefaultBackgroundHeight;
+        _backgroundHeight        = kMDCParallaxViewDefaultBackgroundHeight;
+        _backgroundExpandedHeight = kMDCParallaxViewDefaultBackgroundExpanedHeight;
+        _backgroundExpandThreshold = kMDCParallaxViewDefaultBackgroundExpandThreshold;
+        _backgroundShrinkThreshold = kMDCParallaxViewDefaultBackgroundShrinkThreshold;
+    }
+    
+    return self;
+}
+
 - (id)initWithBackgroundView:(UIView *)backgroundView foregroundView:(UIView *)foregroundView {
-    self = [super init];
+    self = [self init];
     if (self) {
-        _currentBackgroundHeight = kMDCParallaxViewDefaultHeight;
-        _backgroundHeight = kMDCParallaxViewDefaultHeight;
-        _backgroundView = backgroundView;
-        _foregroundView = foregroundView;
-
-        _backgroundScrollView = [UIScrollView new];
-        _backgroundScrollView.backgroundColor = [UIColor clearColor];
-        _backgroundScrollView.showsHorizontalScrollIndicator = NO;
-        _backgroundScrollView.showsVerticalScrollIndicator = NO;
-        _backgroundScrollView.scrollsToTop = NO;
-        _backgroundScrollView.canCancelContentTouches = YES;
-        [_backgroundScrollView addSubview:_backgroundView];
-        [self addSubview:_backgroundScrollView];
-
-        _foregroundScrollView = [UIScrollView new];
-        _foregroundScrollView.backgroundColor = [UIColor clearColor];
-        _foregroundScrollView.delegate = self;
-        [_foregroundScrollView addSubview:_foregroundView];
-        [self addSubview:_foregroundScrollView];
-        
-        [self addFrameObservers];
+        self.backgroundView = backgroundView;
+        self.foregroundView = foregroundView;
     }
     return self;
 }
 
 - (void)dealloc {
     [self removeFrameObservers];
+}
+
+- (void)checkAndPrepareScrollViews {
+    
+    if (!_foregroundScrollView) {
+        _backgroundScrollView = [UIScrollView new];
+        [self addSubview:_backgroundScrollView];
+        _backgroundScrollView.backgroundColor = [UIColor clearColor];
+        _backgroundScrollView.showsHorizontalScrollIndicator = NO;
+        _backgroundScrollView.showsVerticalScrollIndicator = NO;
+        _backgroundScrollView.scrollsToTop = NO;
+        _backgroundScrollView.canCancelContentTouches = YES;
+        
+        
+        _foregroundScrollView = [UIScrollView new];
+        [self addSubview:_foregroundScrollView];
+        _foregroundScrollView.showsVerticalScrollIndicator = NO;
+        _foregroundScrollView.backgroundColor = [UIColor clearColor];
+        _foregroundScrollView.delegate = self;
+        
+        [self addFrameObservers];
+    }
+}
+
+- (void)setBackgroundView:(UIView *)backgroundView {
+    
+    [self checkAndPrepareScrollViews];
+    
+    if (_backgroundView) {
+        [_backgroundView removeFromSuperview];
+    }
+    
+    _backgroundView = backgroundView;
+    [_backgroundScrollView addSubview:_backgroundView];
+    [self updateBackgroundFrame];
+    [self updateForegroundFrame];
+}
+
+
+- (void)setForegroundView:(UIView *)foregroundView {
+
+    [self checkAndPrepareScrollViews];
+    
+    if (_foregroundView) {
+        [_foregroundView removeFromSuperview];
+    }
+    
+    _foregroundView = foregroundView;
+    [_foregroundScrollView addSubview:_foregroundView];
+    [self updateBackgroundFrame];
+    [self updateForegroundFrame];
 }
 
 

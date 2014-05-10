@@ -67,14 +67,12 @@
     textView.scrollsToTop = NO;
     textView.editable = NO;
 
-    self.parallaxView = [[MDCParallaxView alloc] initWithBackgroundView:backgroundImageView
-                                                                     foregroundView:textView];
+    self.parallaxView = [[MDCParallaxView alloc] init];
     self.parallaxView.frame = self.view.bounds;
     self.parallaxView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.parallaxView.backgroundHeight = 250.0f;
-    self.parallaxView.backgroundExpandedHeight = 400;
-    self.parallaxView.backgroundExpandThreshold = 60;
-    self.parallaxView.backgroundShrinkThreshold = 30;
+    self.parallaxView.foregroundView = textView;
+    self.parallaxView.backgroundView = backgroundImageView;
     
     self.parallaxView.scrollView.scrollsToTop = YES;
     self.parallaxView.backgroundInteractionEnabled = YES;
