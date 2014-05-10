@@ -36,8 +36,10 @@
 @property (nonatomic, assign) CGFloat backgroundHeight;
 
 @property (nonatomic, assign) CGFloat backgroundExpandedHeight;
-@property (nonatomic, assign) CGFloat expandThreshold;
+@property (nonatomic, assign) CGFloat backgroundExpandThreshold;
+@property (nonatomic, assign) CGFloat backgroundShrinkThreshold;
 @property (nonatomic, getter = isBackgroundExpaneded) BOOL backgroundExpaneded;
+- (void)setBackgroundExpaneded:(BOOL)backgroundExpaneded animated:(BOOL)animated;
 
 /// YES if the backgroundView should handle touch input. 
 @property (nonatomic, getter = isBackgroundInteractionEnabled) BOOL backgroundInteractionEnabled;

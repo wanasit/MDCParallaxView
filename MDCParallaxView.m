@@ -148,13 +148,10 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
     
     
     CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
-    if (self.backgroundExpaneded && offsetY > (self.backgroundExpandedHeight - self.backgroundHeight)){
-        self.backgroundExpaneded = NO;
-        self.currentBackgroundHeight = self.backgroundHeight;
-        [self updateBackgroundFrame];
-        [self updateForegroundFrame];
-        
-        [self.foregroundScrollView setContentOffset:CGPointMake(0, offsetY - (self.backgroundExpandedHeight - self.backgroundHeight))
+    CGFloat pullbackOffset = offsetY - (self.backgroundExpandedHeight - self.backgroundHeight);
+    if (self.backgroundExpaneded && pullbackOffset > 0){
+        [self setBackgroundExpaneded:NO animated:NO];
+        [self.foregroundScrollView setContentOffset:CGPointMake(0, pullbackOffset)
                                            animated:NO];
     }
     
@@ -168,26 +165,20 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
 
 
 - (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
-
-    CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
     
-    if (!self.backgroundExpaneded && offsetY < -self.expandThreshold) {
-        [UIView animateWithDuration:0.3 animations:^{
-            self.currentBackgroundHeight = self.backgroundExpandedHeight;
-            self.backgroundExpaneded = YES;
-            [self updateBackgroundFrame];
-            [self updateForegroundFrame];
-            [self updateContentOffset];
-            
-        } completion:^(BOOL finished) {
-            
-        }];
+    CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
+    if (self.backgroundExpaneded && offsetY > self.backgroundShrinkThreshold) {
+        [self setBackgroundExpaneded:NO animated:YES];
     }
 }
 
--(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
 
-    
+    CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
+    NSLog(@"Decelerating %f", offsetY);
+    if (!self.backgroundExpaneded && offsetY < -self.backgroundExpandThreshold) {
+        [self setBackgroundExpaneded:YES animated:YES];
+    }
 }
 
 
@@ -203,6 +194,40 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
     [self updateBackgroundFrame];
     [self updateForegroundFrame];
     [self updateContentOffset];
+}
+
+
+- (void)setBackgroundExpaneded:(BOOL)backgroundExpaneded animated:(BOOL)animated {
+
+    if (animated) {
+        [UIView animateWithDuration:0.3 animations:^{
+            
+            if (backgroundExpaneded) {
+                self.currentBackgroundHeight = self.backgroundExpandedHeight;
+                self.backgroundExpaneded = YES;
+            } else {
+                self.currentBackgroundHeight = self.backgroundHeight;
+                self.backgroundExpaneded = NO;
+            }
+            [self updateBackgroundFrame];
+            [self updateForegroundFrame];
+            
+            [self.foregroundScrollView setContentOffset:CGPointMake(0, 0)
+                                               animated:NO];
+        }];
+    } else {
+    
+        if (backgroundExpaneded) {
+            self.currentBackgroundHeight = self.backgroundExpandedHeight;
+            self.backgroundExpaneded = YES;
+        } else {
+            self.currentBackgroundHeight = self.backgroundHeight;
+            self.backgroundExpaneded = NO;
+        }
+        [self updateBackgroundFrame];
+        [self updateForegroundFrame];
+        [self updateContentOffset];
+    }
 }
 
 
@@ -259,11 +284,20 @@ static CGFloat const kMDCParallaxViewDefaultHeight = 150.0f;
                                            self.currentBackgroundHeight,
                                            CGRectGetWidth(self.foregroundView.frame),
                                            CGRectGetHeight(self.foregroundView.frame));
-
+    
     self.foregroundScrollView.frame = self.bounds;
-    self.foregroundScrollView.contentSize =
-        CGSizeMake(CGRectGetWidth(self.foregroundView.frame),
+    
+    if (self.backgroundExpaneded) {
+        self.foregroundScrollView.alwaysBounceVertical = YES;
+        self.foregroundScrollView.contentSize =
+            CGSizeMake(CGRectGetWidth(self.foregroundView.frame),
+                   CGRectGetHeight(self.foregroundScrollView.frame));
+    }else{
+        self.foregroundScrollView.contentSize =
+            CGSizeMake(CGRectGetWidth(self.foregroundView.frame),
                    CGRectGetHeight(self.foregroundView.frame) + self.currentBackgroundHeight);
+    }
+    
 }
 
 - (void)updateContentOffset {

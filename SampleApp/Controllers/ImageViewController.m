@@ -28,7 +28,7 @@
 
 
 @interface ImageViewController () <UIScrollViewDelegate>
-
+@property (nonatomic, strong) MDCParallaxView *parallaxView;
 @end
 
 
@@ -41,16 +41,16 @@
     [super viewDidLoad];
 
     UIImage *backgroundImage = [UIImage imageNamed:@"background.png"];
-    CGRect backgroundRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), backgroundImage.size.height+50);
+    CGRect backgroundRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), backgroundImage.size.height + 50);
     UIImageView *backgroundImageView = [[UIImageView alloc] initWithFrame:backgroundRect];
     backgroundImageView.image = backgroundImage;
     backgroundImageView.contentMode = UIViewContentModeScaleAspectFill;
+    backgroundImageView.userInteractionEnabled = YES;
     
-    UITapGestureRecognizer *tapGesture =
-        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    [backgroundImageView addGestureRecognizer:tapGesture];
+    [backgroundImageView addGestureRecognizer:
+     [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleBackgroundTap:)]];
 
-    CGRect textRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), 400.0f);
+    CGRect textRect = CGRectMake(0, 0, CGRectGetWidth(self.view.frame), 600);
     UITextView *textView = [[UITextView alloc] initWithFrame:textRect];
     textView.text = NSLocalizedString(@"Permission is hereby granted, free of charge, to any "
                                       @"person obtaining a copy of this software and associated "
@@ -60,27 +60,33 @@
                                       @"distribute, sublicense, and/or sell copies of the "
                                       @"Software, and to permit persons to whom the Software is "
                                       @"furnished to do so, subject to the following "
-                                      @"conditions...\"", nil);
+                                      @"conditions...\"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...END", nil);
     textView.textAlignment = NSTextAlignmentCenter;
     textView.font = [UIFont systemFontOfSize:14.0f];
     textView.textColor = [UIColor darkTextColor];
     textView.scrollsToTop = NO;
     textView.editable = NO;
 
-    MDCParallaxView *parallaxView = [[MDCParallaxView alloc] initWithBackgroundView:backgroundImageView
+    self.parallaxView = [[MDCParallaxView alloc] initWithBackgroundView:backgroundImageView
                                                                      foregroundView:textView];
-    parallaxView.frame = self.view.bounds;
-    parallaxView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    parallaxView.backgroundHeight = 250.0f;
-    parallaxView.backgroundExpandedHeight = 450;
-    parallaxView.expandThreshold = 50;
+    self.parallaxView.frame = self.view.bounds;
+    self.parallaxView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.parallaxView.backgroundHeight = 250.0f;
+    self.parallaxView.backgroundExpandedHeight = 400;
+    self.parallaxView.backgroundExpandThreshold = 60;
+    self.parallaxView.backgroundShrinkThreshold = 30;
     
-    parallaxView.scrollView.scrollsToTop = YES;
-    parallaxView.backgroundInteractionEnabled = YES;
-    parallaxView.scrollViewDelegate = self;
-    [self.view addSubview:parallaxView];
+    self.parallaxView.scrollView.scrollsToTop = YES;
+    self.parallaxView.backgroundInteractionEnabled = YES;
+    self.parallaxView.scrollViewDelegate = self;
+    [self.view addSubview:self.parallaxView];
+    
+    
+    
+    
+    [textView addGestureRecognizer:
+        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleForegroundTap:)]];
 }
-
 
 #pragma mark - UIScrollViewDelegate Protocol Methods
 
@@ -91,8 +97,14 @@
 
 #pragma mark - Internal Methods
 
-- (void)handleTap:(UIGestureRecognizer *)gesture {
+- (void)handleBackgroundTap:(UIGestureRecognizer *)gesture {
     NSLog(@"%@:%@", [self class], NSStringFromSelector(_cmd));
+    [self.parallaxView setBackgroundExpaneded:YES animated:YES];
+}
+
+- (void)handleForegroundTap:(UIGestureRecognizer *)gesture {
+    NSLog(@"%@:%@", [self class], NSStringFromSelector(_cmd));
+    [self.parallaxView setBackgroundExpaneded:NO animated:YES];
 }
 
 @end
