@@ -50,7 +50,7 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 30;
     if (self = [super init]) {
         _currentBackgroundHeight = kMDCParallaxViewDefaultBackgroundHeight;
         _backgroundHeight        = kMDCParallaxViewDefaultBackgroundHeight;
-        _backgroundExpandedHeight = kMDCParallaxViewDefaultBackgroundExpanedHeight;
+        _backgroundExpandedHeight  = kMDCParallaxViewDefaultBackgroundExpanedHeight;
         _backgroundExpandThreshold = kMDCParallaxViewDefaultBackgroundExpandThreshold;
         _backgroundShrinkThreshold = kMDCParallaxViewDefaultBackgroundShrinkThreshold;
     }
