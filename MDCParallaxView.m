@@ -68,7 +68,13 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
 }
 
 - (void)dealloc {
-    [self removeFrameObservers];
+    
+    if (_backgroundView)
+        [self removeObserver:self forKeyPath:@"backgroundView.frame"];
+    
+    if (_foregroundView)
+        [self removeObserver:self forKeyPath:@"foregroundView.frame"];
+    
 }
 
 - (void)checkAndPrepareScrollViews {
@@ -88,8 +94,6 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
         _foregroundScrollView.showsVerticalScrollIndicator = NO;
         _foregroundScrollView.backgroundColor = [UIColor clearColor];
         _foregroundScrollView.delegate = self;
-        
-        [self addFrameObservers];
     }
 }
 
@@ -105,8 +109,11 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
     [_backgroundScrollView addSubview:_backgroundView];
     [self updateBackgroundFrame];
     [self updateForegroundFrame];
+    
+    [self addObserver:self forKeyPath:@"backgroundView.frame"
+              options:NSKeyValueObservingOptionOld
+              context:kMDCBackgroundViewObservationContext];
 }
-
 
 - (void)setForegroundView:(UIView *)foregroundView {
 
@@ -120,6 +127,10 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
     [_foregroundScrollView addSubview:_foregroundView];
     [self updateBackgroundFrame];
     [self updateForegroundFrame];
+    
+    [self addObserver:self forKeyPath:@"foregroundView.frame"
+              options:NSKeyValueObservingOptionOld
+              context:kMDCForegroundViewObservationContext];
 }
 
 
@@ -208,8 +219,6 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
     }
 }
 
-
-
 - (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
     
     CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
@@ -217,7 +226,6 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
         [self setBackgroundExpaneded:YES animated:YES];
     }
     
-    //CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
     if (self.backgroundExpaneded && offsetY > self.backgroundShrinkThreshold) {
         [self setBackgroundExpaneded:NO animated:YES];
     }
@@ -305,20 +313,6 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
 #pragma mark - Internal Methods
 
 #pragma mark Key-Value Observing
-
-- (void)addFrameObservers {
-    [self addObserver:self forKeyPath:@"foregroundView.frame"
-              options:NSKeyValueObservingOptionOld
-              context:kMDCForegroundViewObservationContext];
-    [self addObserver:self forKeyPath:@"backgroundView.frame"
-              options:NSKeyValueObservingOptionOld
-              context:kMDCBackgroundViewObservationContext];
-}
-
-- (void)removeFrameObservers {
-    [self removeObserver:self forKeyPath:@"foregroundView.frame"];
-    [self removeObserver:self forKeyPath:@"backgroundView.frame"];
-}
 
 - (void)updateForegroundFrameIfDifferent:(CGRect)oldFrame {
     if (!CGRectEqualToRect(self.foregroundView.frame, oldFrame)) {
