@@ -27,7 +27,7 @@
 #import "MDCParallaxView.h"
 
 
-@interface ImageViewController () <UIScrollViewDelegate>
+@interface ImageViewController () <MDCParallaxViewDelegate>
 @property (nonatomic, strong) MDCParallaxView *parallaxView;
 @end
 
@@ -60,7 +60,7 @@
                                       @"distribute, sublicense, and/or sell copies of the "
                                       @"Software, and to permit persons to whom the Software is "
                                       @"furnished to do so, subject to the following "
-                                      @"conditions...\"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n...END", nil);
+                                      @"conditions...\"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEND OF TEXT", nil);
     textView.textAlignment = NSTextAlignmentCenter;
     textView.font = [UIFont systemFontOfSize:14.0f];
     textView.textColor = [UIColor darkTextColor];
@@ -71,12 +71,13 @@
     self.parallaxView.frame = self.view.bounds;
     self.parallaxView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.parallaxView.backgroundHeight = 250.0f;
+    self.parallaxView.backgroundExpandedHeight = 430;
     self.parallaxView.foregroundView = textView;
     self.parallaxView.backgroundView = backgroundImageView;
     
     self.parallaxView.scrollView.scrollsToTop = YES;
     self.parallaxView.backgroundInteractionEnabled = YES;
-    self.parallaxView.scrollViewDelegate = self;
+    self.parallaxView.delegate = self;
     [self.view addSubview:self.parallaxView];
     
     
@@ -90,6 +91,20 @@
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     NSLog(@"%@:%@", [self class], NSStringFromSelector(_cmd));
+}
+
+- (void)parallaxViewWillExpandBackground:(MDCParallaxView *)parallaxView {
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        self.parallaxView.foregroundView.backgroundColor = [UIColor blackColor];
+    }];
+}
+
+- (void)parallaxViewWillShrinkBackground:(MDCParallaxView *)parallaxView {
+
+    [UIView animateWithDuration:0.3 animations:^{
+        self.parallaxView.foregroundView.backgroundColor = [UIColor whiteColor];
+    }];
 }
 
 

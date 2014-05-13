@@ -144,8 +144,8 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
 #pragma mark - NSObject Overrides
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
-    if ([self.scrollViewDelegate respondsToSelector:[anInvocation selector]]) {
-        [anInvocation invokeWithTarget:self.scrollViewDelegate];
+    if ([self.delegate respondsToSelector:[anInvocation selector]]) {
+        [anInvocation invokeWithTarget:self.delegate];
     } else {
         [super forwardInvocation:anInvocation];
     }
@@ -153,7 +153,7 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
     return ([super respondsToSelector:aSelector] ||
-            [self.scrollViewDelegate respondsToSelector:aSelector]);
+            [self.delegate respondsToSelector:aSelector]);
 }
 
 
@@ -202,10 +202,9 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
                                            animated:NO];
     }
     
-    
     [self updateContentOffset];
-    if ([self.scrollViewDelegate respondsToSelector:_cmd]) {
-        [self.scrollViewDelegate scrollViewDidScroll:scrollView];
+    if ([self.delegate respondsToSelector:_cmd]) {
+        [self.delegate scrollViewDidScroll:scrollView];
     }
 }
 
@@ -238,40 +237,70 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
     [self updateContentOffset];
 }
 
+- (void)setBackgroundExpaneded:(BOOL)backgroundExpaneded {
+    [self setBackgroundExpaneded:backgroundExpaneded animated:NO];
+}
 
 - (void)setBackgroundExpaneded:(BOOL)backgroundExpaneded animated:(BOOL)animated {
-
+    
+    if (_backgroundExpaneded) {
+        if (backgroundExpaneded) return;
+        if ([self.delegate respondsToSelector:@selector(parallaxViewWillShrinkBackground:)])
+            [self.delegate parallaxViewWillShrinkBackground:self];
+    } else {
+        if (!backgroundExpaneded) return;
+        if ([self.delegate respondsToSelector:@selector(parallaxViewWillExpandBackground:)])
+            [self.delegate parallaxViewWillExpandBackground:self];
+    }
+    
     if (animated) {
         [UIView animateWithDuration:0.3 animations:^{
             
             if (backgroundExpaneded) {
-                self.currentBackgroundHeight = self.backgroundExpandedHeight;
-                self.backgroundExpaneded = YES;
+                _currentBackgroundHeight = self.backgroundExpandedHeight;
+                _backgroundExpaneded = YES;
             } else {
-                self.currentBackgroundHeight = self.backgroundHeight;
-                self.backgroundExpaneded = NO;
+                _currentBackgroundHeight = self.backgroundHeight;
+                _backgroundExpaneded = NO;
             }
             [self updateBackgroundFrame];
             [self updateForegroundFrame];
             
             [self.foregroundScrollView setContentOffset:CGPointMake(0, 0)
                                                animated:NO];
+        } completion:^(BOOL finished) {
+            
+            if (backgroundExpaneded) {
+                if ([self.delegate respondsToSelector:@selector(parallaxViewDidExpandBackground:)])
+                    [self.delegate parallaxViewDidExpandBackground:self];
+            } else {
+                if ([self.delegate respondsToSelector:@selector(parallaxViewDidShrinkBackground:)])
+                    [self.delegate parallaxViewDidShrinkBackground:self];
+            }
         }];
     } else {
     
         if (backgroundExpaneded) {
-            self.currentBackgroundHeight = self.backgroundExpandedHeight;
-            self.backgroundExpaneded = YES;
+            _currentBackgroundHeight = self.backgroundExpandedHeight;
+            _backgroundExpaneded = YES;
         } else {
-            self.currentBackgroundHeight = self.backgroundHeight;
-            self.backgroundExpaneded = NO;
+            _currentBackgroundHeight = self.backgroundHeight;
+            _backgroundExpaneded = NO;
         }
         [self updateBackgroundFrame];
         [self updateForegroundFrame];
         [self updateContentOffset];
+        
+        
+        if (backgroundExpaneded) {
+            if ([self.delegate respondsToSelector:@selector(parallaxViewDidExpandBackground:)])
+                [self.delegate parallaxViewDidExpandBackground:self];
+        } else {
+            if ([self.delegate respondsToSelector:@selector(parallaxViewDidShrinkBackground:)])
+                [self.delegate parallaxViewDidShrinkBackground:self];
+        }
     }
 }
-
 
 #pragma mark - Internal Methods
 

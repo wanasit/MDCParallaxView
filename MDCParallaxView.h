@@ -25,13 +25,16 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol MDCParallaxViewDelegate;
+
 
 @interface MDCParallaxView : UIView
 
 /// The scrollView used to display the parallax effect.
 @property (nonatomic, readonly) UIScrollView *scrollView;
 /// The delegate of scrollView. You must use this property when setting the scrollView delegate--attempting to set the scrollView delegate directly using `scrollView.delegate` will cause the parallax effect to stop updating.
-@property (nonatomic, weak) id<UIScrollViewDelegate> scrollViewDelegate;
+@property (nonatomic, weak) id<MDCParallaxViewDelegate> delegate;
+
 /// The height of the background view when at rest.
 @property (nonatomic, assign) CGFloat backgroundHeight;
 @property (nonatomic, assign) CGFloat backgroundExpandedHeight;
@@ -53,4 +56,13 @@
 - (id)initWithBackgroundView:(UIView *)backgroundView
               foregroundView:(UIView *)foregroundView;
 
+@end
+
+
+@protocol MDCParallaxViewDelegate <UIScrollViewDelegate>
+@optional
+- (void)parallaxViewWillExpandBackground:(MDCParallaxView*)parallaxView;
+- (void)parallaxViewDidExpandBackground:(MDCParallaxView*)parallaxView;
+- (void)parallaxViewWillShrinkBackground:(MDCParallaxView*)parallaxView;
+- (void)parallaxViewDidShrinkBackground:(MDCParallaxView*)parallaxView;
 @end
