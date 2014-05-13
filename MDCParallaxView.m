@@ -31,7 +31,7 @@ static void * kMDCBackgroundViewObservationContext = &kMDCBackgroundViewObservat
 static CGFloat const kMDCParallaxViewDefaultBackgroundHeight = 150.0f;
 static CGFloat const kMDCParallaxViewDefaultBackgroundExpanedHeight = 400;
 static CGFloat const kMDCParallaxViewDefaultBackgroundExpandThreshold = 60;
-static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 30;
+static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 20;
 
 @interface MDCParallaxView () <UIScrollViewDelegate>
 @property (nonatomic, strong) UIScrollView *backgroundScrollView;
@@ -178,7 +178,9 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 30;
     if ([self.backgroundView pointInside:point withEvent:event] && _backgroundInteractionEnabled) {
         CGFloat visibleBackgroundViewHeight =
             self.currentBackgroundHeight - self.foregroundScrollView.contentOffset.y;
-        if (point.y < visibleBackgroundViewHeight){
+        if (point.y < visibleBackgroundViewHeight) {
+            point.y += self.backgroundScrollView.contentOffset.y;
+            point.y -= self.backgroundView.frame.origin.y;
             return [self.backgroundView hitTest:point withEvent:event];
         }
     }
@@ -212,20 +214,15 @@ static CGFloat const kMDCParallaxViewDefaultBackgroundShrinkThreshold = 30;
 - (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
     
     CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
+    if (!self.backgroundExpaneded && offsetY < -self.backgroundExpandThreshold) {
+        [self setBackgroundExpaneded:YES animated:YES];
+    }
+    
+    //CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
     if (self.backgroundExpaneded && offsetY > self.backgroundShrinkThreshold) {
         [self setBackgroundExpaneded:NO animated:YES];
     }
 }
-
--(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-
-    CGFloat offsetY   = self.foregroundScrollView.contentOffset.y;
-    NSLog(@"Decelerating %f", offsetY);
-    if (!self.backgroundExpaneded && offsetY < -self.backgroundExpandThreshold) {
-        [self setBackgroundExpaneded:YES animated:YES];
-    }
-}
-
 
 #pragma mark - Public Interface
 
